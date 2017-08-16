@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/tempUI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="体温测量"/>
+    <TextView
+        android:id="@+id/ready"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textSize="20dp"
+        android:layout_height="wrap_content"
+        android:text="正在连接设备，请确认已经打开体温计..."/>
+    <TextView
+        android:id="@+id/temp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textSize="50dp"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/startTemp"
+        android:text="开始测量"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/update"
+        android:text="上传"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>

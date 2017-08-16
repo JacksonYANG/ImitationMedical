@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_weight="6"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical">
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/ecgTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
+            android:text="心电测量"/>
+
+        <HorizontalScrollView
+            android:layout_weight="11"
+            android:id="@+id/mScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+            <com.hqyj.dev.doctorforhealth.PaintTools.ECGView
+                android:id="@+id/mView"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
+        <Button
+            android:id="@+id/ecgstart"
+            android:layout_marginBottom="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开始测量"/>
+        <Button
+            android:id="@+id/ecgupdate"
+            android:layout_marginBottom="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="上传"/>
+        <!--<Button-->
+            <!--android:id="@+id/ecgstart"-->
+            <!--android:layout_marginBottom="20dp"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="开始测量"/>-->
+        <!--<Button-->
+            <!--android:id="@+id/ecgupdate"-->
+            <!--android:layout_marginBottom="20dp"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="上传"/>-->
+    </LinearLayout>
+</LinearLayout>

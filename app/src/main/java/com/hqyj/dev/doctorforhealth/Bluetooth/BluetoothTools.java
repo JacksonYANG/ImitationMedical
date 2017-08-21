@@ -109,9 +109,11 @@ public class BluetoothTools {
 
             try {
                 bsocket.close();
-                mInputStream = null;
-                mOutputStream = null;
+                mInputStream.close();
+                mOutputStream.close();
                 bsocket = null;
+                mInputStream=null;
+                mOutputStream=null;
                 Log.d(TAG,"success");
                 return true;
             } catch (IOException e) {

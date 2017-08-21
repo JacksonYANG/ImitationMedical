@@ -118,17 +118,22 @@ public class BluetoothConnectActivity extends Activity{
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
+            String action = intent.getAction();//获得接受的mBluetoothReceiver中的广播事件
+            //将action与上面所说的动态广播字符串进行一一匹配
             if(action.equals("mBluetoothDevice")){
-                String DeviceName = intent.getStringExtra("DeviceName");
+                //在BluetoothService第168行对应有putExtra,对应的键值为蓝牙设备的名字和地址
+                //这个if条件中包含的是未配对的情况
+                String DeviceName = intent.getStringExtra("DeviceName");//
                 String DeviceAddress = intent.getStringExtra("DeviceAddress");
                 Log.d(TAG, DeviceName + DeviceAddress);
+                //如果blueDeviceName中没有包含上述的DeviceName和DeviceAddress，则发送通知为未配对
                 if(!blueDeviceName.contains(DeviceName + "\r\n" + DeviceAddress+ "\r\n" + "未配对")){
                     blueDeviceName.add(DeviceName + "\r\n" + DeviceAddress+ "\r\n" + "未配对");
-                    blueAdapter.notifyDataSetChanged();
+                    blueAdapter.notifyDataSetChanged();//调用BaseAdapter中的更新函数，更新当前列表
                 }
             }
             if(action.equals("mBluetoothDeviceBond")){
+                //这段条件逻辑中包含的是已配对的逻辑,
                 String DeviceName = intent.getStringExtra("DeviceName");
                 String DeviceAddress = intent.getStringExtra("DeviceAddress");
                 Log.d(TAG, DeviceName + DeviceAddress);
@@ -138,27 +143,32 @@ public class BluetoothConnectActivity extends Activity{
                 }
             }
             if(action.equals("finish")){
-                mSwitch.setChecked(false);
-                mSwitch.invalidate();
+                //当广播接收器捕获值为finish的广播后，对应为BluetothService中的182行蓝牙扫描结束
+                mSwitch.setChecked(false);//对应DrawSwitch类中使得newStatus为flase
+                mSwitch.invalidate();//关闭DrawSwitch View,使其无效
             }
             if(action.equals("update")){
-                String bluetype = intent.getStringExtra("bluetype");
-                String bluename = intent.getStringExtra("bluename");
+                //若action字符串捕获值为update的广播后，执行下述逻辑
+                String bluetype = intent.getStringExtra("bluetype");//获得bluetype的键值（蓝牙类型）
+                String bluename = intent.getStringExtra("bluename");//获得bluename的键值（蓝牙名字）
                 if(bluetype.equals("blue")){
+                    //如果bluetype和blue相匹配，则已配对，将UI中蓝牙按钮的文字设置为蓝牙设备名字+已配对
                     blutoothbtn.setText(bluename+" 已配对");
                 }else if(bluetype.equals("sm")){
+                    //如果bluetype跟sm（这么邪恶的？？？？）这个字符串相匹配，则显示已配对
                     saomiaobtn.setText(bluename+" 已配对");
                 }
             }
             if(action.equals("change")){
-                String yuan = intent.getStringExtra("yuan");
-                String xian = intent.getStringExtra("xian");
+                //如果action与change字符串相同
+                String yuan = intent.getStringExtra("yuan");//代表原来的蓝牙设备的名字
+                String xian = intent.getStringExtra("xian");//代表现在的蓝牙设备的名字
                 String bluetype = intent.getStringExtra("bluetype");
                 String bluename = intent.getStringExtra("bluename");
                 if(blueDeviceName.contains(yuan)){
-                    blueDeviceName.remove(yuan);
-                    blueDeviceName.add(xian);
-                    blueAdapter.notifyDataSetChanged();
+                    blueDeviceName.remove(yuan);//蓝牙设备名字列表中删除原来的设备名称
+                    blueDeviceName.add(xian);//蓝牙设备名字列表中添加现在的设备名称
+                    blueAdapter.notifyDataSetChanged();//刷新蓝牙适配器
                 }
                 if(bluetype.equals("blue")){
                     blutoothbtn.setText(bluename+" 已配对");
@@ -170,14 +180,15 @@ public class BluetoothConnectActivity extends Activity{
     }
 
     public void connectDialog(final String str){
+        //设置对话框的相应逻辑
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_connect,null);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_connect,null);//加载连接对话框的布局
         builder.setView(view);
         final EditText editText = (EditText)view.findViewById(R.id.edittext);
         ListView listView = (ListView) view.findViewById(R.id.btList);
         ArrayList<String> list = new ArrayList<String>();
-        for(String s : blueDeviceName){
-            list.add(s);
+        for(String AllBlueDevice: blueDeviceName){
+            list.add(AllBlueDevice);//添加所有的蓝牙设备名字到ListView的列表中
         }
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_expandable_list_item_1,list);
         listView.setAdapter(arrayAdapter);
@@ -186,19 +197,19 @@ public class BluetoothConnectActivity extends Activity{
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String[] array = blueDeviceName.get(position).split("\r\n");
+                String[] array = blueDeviceName.get(position).split("\r\n");//若产生点击事件，获取除去空格回车等空白符的相应点击位置的蓝牙设备的名字
                 String DeviceName = array[0];
                 String DeviceAddress = array[1];
-                String pinCode = editText.getText().toString();
+                String pinCode = editText.getText().toString();//连接设备时的密码
 
-                Intent intent = new Intent("connectCMD");
-                intent.putExtra("deviceAddress",DeviceAddress);
-                intent.putExtra("pinCode",pinCode);
+                Intent intent = new Intent("connectCMD");//产生一个活动为connectCMD，对应逻辑在BluetoothService中
+                intent.putExtra("deviceAddress",DeviceAddress);//设置deviceAddress键值对
+                intent.putExtra("pinCode",pinCode);//设置pinCode键值对
                 Log.d(TAG,str+"  blue");
-                intent.putExtra("blue",str);
-                sendBroadcast(intent);
+                intent.putExtra("blue",str);//设置blue相应键值对
+                sendBroadcast(intent);//发送广播
 
-                alertDialog.dismiss();
+                alertDialog.dismiss();//关闭对话框
             }
         });
     }
@@ -207,7 +218,7 @@ public class BluetoothConnectActivity extends Activity{
     protected void onPause() {
         super.onPause();
         Log.d(TAG,"onPause()");
-        stopService(new Intent(this, BluetoothConnectService.class));
+        stopService(new Intent(this, BluetoothConnectService.class));//生命周期为暂停时，停止蓝牙服务
 
     }
 
@@ -218,6 +229,6 @@ public class BluetoothConnectActivity extends Activity{
         super.onDestroy();
         Log.d(TAG,"onDestory()");
 
-        unregisterReceiver(mBluetoothReceiver);
+        unregisterReceiver(mBluetoothReceiver);//注销所有的包含于mBluetoothReceiver中的广播过滤器
     }
 }

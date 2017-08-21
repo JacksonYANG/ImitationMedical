@@ -29,7 +29,7 @@ import java.util.Set;
 public class BluetoothConnectService extends Service {
     private String TAG = "BluetoothConnectService";
     private BluetoothAdapter mBluetoothAdapter;
-    private BluetoothDevice mBluetootDevice;
+    private BluetoothDevice mBluetoothDevice;
     private String pinCode,bluetype;
     private MyBroadcastReceiver myBroadcastReceiver;
     private static ArrayList<Task> tasklist = new ArrayList<Task>();
@@ -68,9 +68,9 @@ public class BluetoothConnectService extends Service {
             }
 
             Log.d(TAG,bAdd);
-            mBluetootDevice = mBluetoothAdapter.getRemoteDevice(bAdd);
-            if(mBluetootDevice.getBondState() == BluetoothDevice.BOND_BONDED){
-                boolean connect = Tools.connectBluetooth(mBluetootDevice,mBluetoothAdapter);
+            mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(bAdd);
+            if(mBluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED){
+                boolean connect = Tools.connectBluetooth(mBluetoothDevice,mBluetoothAdapter);
                 if(connect){
                     if(bName.equals("blue")){
                         handler.sendEmptyMessage(2);
@@ -130,7 +130,7 @@ public class BluetoothConnectService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            mBluetootDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            mBluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             if(action.equals("disconnect")){//断开蓝牙
                 Tools.disconnectBluetooth();
             }
@@ -152,7 +152,7 @@ public class BluetoothConnectService extends Service {
                 myThread = new MyThread(sm,"sm");
                 myThread.start();
             }
-            if(action.equals("switch")){//开始扫描蓝牙
+            if(action.equals("switch")){//服务器转换蓝牙设备
                 Log.d(TAG,"switch in server");
                 Tools.startScan();
             }
@@ -163,16 +163,16 @@ public class BluetoothConnectService extends Service {
                 }
             }
             if(action.equals(BluetoothDevice.ACTION_FOUND)){//发现蓝牙
-                if(mBluetootDevice.getBondState() == BluetoothDevice.BOND_NONE){
+                if(mBluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE){
                     Intent intentdevice = new Intent("mBluetoothDevice");
-                    intentdevice.putExtra("DeviceName",mBluetootDevice.getName());
-                    intentdevice.putExtra("DeviceAddress",mBluetootDevice.getAddress());
+                    intentdevice.putExtra("DeviceName",mBluetoothDevice.getName());
+                    intentdevice.putExtra("DeviceAddress",mBluetoothDevice.getAddress());
                     sendBroadcast(intentdevice);
                 }
-                if(mBluetootDevice.getBondState() == BluetoothDevice.BOND_BONDED){
+                if(mBluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED){
                     Intent intentdevice = new Intent("mBluetoothDeviceBond");
-                    intentdevice.putExtra("DeviceName",mBluetootDevice.getName());
-                    intentdevice.putExtra("DeviceAddress",mBluetootDevice.getAddress());
+                    intentdevice.putExtra("DeviceName",mBluetoothDevice.getName());
+                    intentdevice.putExtra("DeviceAddress",mBluetoothDevice.getAddress());
                     sendBroadcast(intentdevice);
                 }
             }
@@ -183,52 +183,52 @@ public class BluetoothConnectService extends Service {
             }
             //发送命令，进行连接
             if(action.equals("connectCMD")){
-                String btAddress = intent.getStringExtra("deviceAddress");
-                pinCode = intent.getStringExtra("pinCode");
-                bluetype = intent.getStringExtra("blue");
+                String btAddress = intent.getStringExtra("deviceAddress");//获得对应deviceAddressd的键值
+                pinCode = intent.getStringExtra("pinCode");//获得对应pinCode的键值
+                bluetype = intent.getStringExtra("blue");//获得对应blue的键值
                 Log.d(TAG,btAddress+" "+pinCode);
-                mBluetootDevice = mBluetoothAdapter.getRemoteDevice(btAddress);
-                if(mBluetootDevice.getBondState() == BluetoothDevice.BOND_NONE){
-                    boolean bond = Tools.createBond(mBluetootDevice.getClass(),mBluetootDevice);
+                mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(btAddress);
+                if(mBluetoothDevice.getBondState() == BluetoothDevice.BOND_NONE){
+                    boolean bond = Tools.createBond(mBluetoothDevice.getClass(),mBluetoothDevice);
                     Log.d(TAG,bond+"");
                 }
-                if(mBluetootDevice.getBondState() == BluetoothDevice.BOND_BONDED){
+                if(mBluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED){
                     if(bluetype.equals("blue")){
-                        SharedPreferenceDB.setBlue(BluetoothConnectService.this,mBluetootDevice.getAddress(),"0438");
+                        SharedPreferenceDB.setBlue(BluetoothConnectService.this,mBluetoothDevice.getAddress(),"0438");
                     }
                     if(bluetype.equals("sm")){
-                        SharedPreferenceDB.setBlue(BluetoothConnectService.this,mBluetootDevice.getAddress(),"10010");
+                        SharedPreferenceDB.setBlue(BluetoothConnectService.this,mBluetoothDevice.getAddress(),"10010");
                     }
-                    Intent inten = new Intent("update");
-                    inten.putExtra("bluetype",bluetype);
-                    inten.putExtra("bluename",mBluetootDevice.getName());
-                    sendBroadcast(inten);
+                    Intent intent1 = new Intent("update");
+                    intent1.putExtra("bluetype",bluetype);
+                    intent1.putExtra("bluename",mBluetoothDevice.getName());
+                    sendBroadcast(intent1);
                 }
 
             }
             //配对请求
             if (action.equals("android.bluetooth.device.action.PAIRING_REQUEST")){
-                boolean bonds = Tools.setPin(mBluetootDevice.getClass(), mBluetootDevice, pinCode);
+                boolean bonds = Tools.setPin(mBluetoothDevice.getClass(), mBluetoothDevice, pinCode);
                 Log.d(TAG,bonds+" ;;;;;");
                 Log.d(TAG,"request"+pinCode);
             }
             //绑定状态改变
             if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
-                if(mBluetootDevice.getBondState() == BluetoothDevice.BOND_BONDED){
+                if(mBluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED){
                     if(bluetype.equals("blue")){
-                        SharedPreferenceDB.setBlue(BluetoothConnectService.this,mBluetootDevice.getAddress(),"0438");
+                        SharedPreferenceDB.setBlue(BluetoothConnectService.this,mBluetoothDevice.getAddress(),"0438");
                     }
 
                     if(bluetype.equals("sm")){
-                        SharedPreferenceDB.setBlue(BluetoothConnectService.this,mBluetootDevice.getAddress(),"10010");
+                        SharedPreferenceDB.setBlue(BluetoothConnectService.this,mBluetoothDevice.getAddress(),"10010");
                     }
 
                     Toast.makeText(BluetoothConnectService.this,"配对成功",Toast.LENGTH_SHORT).show();
                     Intent change = new Intent("change");
-                    change.putExtra("yuan",mBluetootDevice.getName()+"\r\n"+mBluetootDevice.getAddress()+"\r\n"+"未配对");
-                    change.putExtra("xian",mBluetootDevice.getName()+"\r\n"+mBluetootDevice.getAddress()+"\r\n"+"已配对");
+                    change.putExtra("yuan",mBluetoothDevice.getName()+"\r\n"+mBluetoothDevice.getAddress()+"\r\n"+"未配对");
+                    change.putExtra("xian",mBluetoothDevice.getName()+"\r\n"+mBluetoothDevice.getAddress()+"\r\n"+"已配对");
                     change.putExtra("bluetype",bluetype);
-                    change.putExtra("bluename",mBluetootDevice.getName());
+                    change.putExtra("bluename",mBluetoothDevice.getName());
                     sendBroadcast(change);
                     Log.d(TAG,"配对成功");
                 }

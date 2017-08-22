@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 医师登陆界面，授权的医师用户名及密码后，可登录到系统几界面
+ * 医师登陆界面，授权的医师用户名及密码后，可登录到系统机界面
  */
 public class LoginActivity extends Activity implements CallBack{
 	private String TAG = "LoginActivity";
@@ -49,18 +49,14 @@ public class LoginActivity extends Activity implements CallBack{
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);//设置界面显示无标题
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//设定窗口全屏
 		Log.d("LoginActivity", "Device info : ");
 		String devInfo = BoardConfig.readDeviceInfo();
 		Log.d("LoginActivity", "Device info : "+ devInfo);
-		if(devInfo == null || !devInfo.equals("www.farsight.com.cn")){
-			Toast.makeText(LoginActivity.this, "www.farsight.com.cn", Toast.LENGTH_SHORT).show();
-			return;
-		}
-		setContentView(R.layout.activity_login_1);
-		ConnectivityManager connect = (ConnectivityManager) LoginActivity.this.getSystemService(CONNECTIVITY_SERVICE);
-		final NetworkInfo info = connect.getActiveNetworkInfo();
+		setContentView(R.layout.activity_login_1);//设置UI
+		ConnectivityManager connect = (ConnectivityManager) LoginActivity.this.getSystemService(CONNECTIVITY_SERVICE);//主要管理与网络连接相关的操作
+		final NetworkInfo info = connect.getActiveNetworkInfo();//获取当前网络的连接状态
 		if(info == null){//检查是否有网络
 			Toast.makeText(LoginActivity.this, "网络没有连接", Toast.LENGTH_SHORT).show();
 		}
@@ -70,8 +66,8 @@ public class LoginActivity extends Activity implements CallBack{
 		login = (Button) findViewById(R.id.login);
 		rememberPass = (CheckBox) findViewById(R.id.rememberPasswd);
 		pref = PreferenceManager.getDefaultSharedPreferences(this);
-		isremember = pref.getBoolean("remember_pass", false);
-		if(isremember){//机制账号和密码
+		isremember = pref.getBoolean("remember_pass", false);//设置默认没有记住密码
+		if(isremember){//已经记住账号和密码
 			String account = pref.getString("account","");
 			String password = pref.getString("passwd", "");
 			name.setText(account);
@@ -92,7 +88,7 @@ public class LoginActivity extends Activity implements CallBack{
 
 				String account = name.getText().toString();
 				String password = passwd.getText().toString();
-				Map<String, String> values = null;
+				Map<String, String> values = null;//设置匹配地图
 				if (info != null) {
 					if (!(account.equals("") || password.equals(""))) {
 						editor = pref.edit();
@@ -100,6 +96,7 @@ public class LoginActivity extends Activity implements CallBack{
 						values.put("name", account);
 						values.put("pwd", password);
 						if (rememberPass.isChecked()) {
+							//选择记住用户名和密码加入到SharePreference
 							editor.putBoolean("remember_pass", true);
 							editor.putString("account", account);
 							editor.putString("passwd", password);
@@ -107,6 +104,7 @@ public class LoginActivity extends Activity implements CallBack{
 							editor.clear();
 						}
 						editor.commit();
+						//在服务中提交用户名和密码并且进行MAP匹配
 						Task loginTask = new Task(LoginActivity.this, Task.NET_WEB_SERVICE_GET_DATA, new Object[]{"checkPasswdUser", values});
 						GetWebInfoService.newTask(loginTask);
 
@@ -115,7 +113,7 @@ public class LoginActivity extends Activity implements CallBack{
 					}
 				} else {
 
-					Toast.makeText(LoginActivity.this, "没有联网，登录失败", Toast.LENGTH_SHORT).show();
+					Toast.makeText(LoginActivity.this, "网络连接失败", Toast.LENGTH_SHORT).show();
 				}
 			}
 		});
@@ -125,6 +123,7 @@ public class LoginActivity extends Activity implements CallBack{
 
 	@Override
 	protected void onStart() {
+		//在生命周期中只要打开软件即启动Task服务
 		super.onStart();
 		Log.d("LoginActivity", "Device info : 1");
 		//开启服务
@@ -141,13 +140,14 @@ public class LoginActivity extends Activity implements CallBack{
 		}
 
 		if(task.result == null && task.isTimeOut){
-			handler.sendEmptyMessage(1);
+			handler.sendEmptyMessage(1);//返回1号错误的空信息
 		}
 		JsonCommand.Doctor doctor;
-		String json = (String) task.result;
-		Log.d("LoginActivity", "json:" + json);
+		String json = (String) task.result;//处理返回的JSON格式数据
+		Log.d("LoginActivity", "json格式数据:" + json);
 		if(json != null && (doctor = JsonCommand.getDoctorObject(json))!= null){
 			if(doctor.code == 0){
+				//若Json.code返回为0，则登陆成功
 				Log.d(TAG,"login");
 				SharedPreferenceDB.setLoginUser(LoginActivity.this, doctor);
 				stopService(new Intent(LoginActivity.this, GetWebInfoService.class));
@@ -157,13 +157,13 @@ public class LoginActivity extends Activity implements CallBack{
 			}else{
 				Message msg = new Message();
 				msg.what = 2;
-				msg.obj = doctor.errorStr;
+				msg.obj = doctor.errorStr;//返回2号错误信息
 				handler.sendMessage(msg);
 			}
 		}else{
 			Message msg = new Message();
 			msg.what = 2;
-			msg.obj = "服务器访问失败";
+			msg.obj = "服务器访问失败";//返回服务器访问失败的错误信息
 			handler.sendMessage(msg);
 		}
 
